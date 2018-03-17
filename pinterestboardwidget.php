@@ -1,97 +1,68 @@
-<?php
+<?php if (!defined('_PS_VERSION_')) exit;
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
-
-class shmoPinterestBoardWidget extends Module
+class PinterestBoardWidget extends Module
 {
-
     protected $errors = [];
 
     protected $config = [
-        'SHMO_PINTEREST_BOARD_WIDGET' => '',
-        'SHMO_PINTEREST_BOARD_WIDGET_URL' => '',
-        'SHMO_PINTEREST_BOARD_WIDGET_BOARD_WIDTH' => '',
-        'SHMO_PINTEREST_BOARD_WIDGET_SCALE_HEIGHT' => '',
-        'SHMO_PINTEREST_BOARD_WIDGET_SCALE_WIDTH' => '',
+        'PINTEREST_BOARD_WIDGET' => '',
+        'PINTEREST_BOARD_WIDGET_URL' => '',
+        'PINTEREST_BOARD_WIDGET_BOARD_WIDTH' => '',
+        'PINTEREST_BOARD_WIDGET_SCALE_HEIGHT' => '',
+        'PINTEREST_BOARD_WIDGET_SCALE_WIDTH' => '',
 
     ];
 
     public function __construct() {
-        $this->name = 'shmopinterestboardwidget';
+        $this->name = 'pinterestboardwidget';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '1.0.1';
         $this->author = 'Andre Matthies';
         $this->need_instance = 0;
         $this->bootstrap = true;
+
         parent::__construct();
+
         $this->displayName = $this->l('Pinterest Board Widget');
         $this->description = $this->l('Adds a block with Pinterest Board Widget.');
-        $this->confirmUninstall = $this->l('Are you sure you want to delete Pinterest Board Widget?');
     }
 
     public function install() {
-        if (Shop::isFeatureActive()) {
-            Shop::setContext(Shop::CONTEXT_ALL);
-        }
-        if (!parent::install()
-            OR !$this->installConfig()
-            OR !$this->registerHook('displayHeader')
-            OR !$this->registerHook('displayTop')
-            OR !$this->registerHook('displayHome')
-            OR !$this->registerHook('displayLeftColumn')
-            OR !$this->registerHook('displayRightColumn')
-            OR !$this->registerHook('displayFooter')
-            OR !$this->registerHook('backOfficeHeader')) {
-            return false;
-        }
-        return true;
+        if (Shop::isFeatureActive()) Shop::setContext(Shop::CONTEXT_ALL);
+        return parent::install()
+            && $this->installConfig()
+            && $this->registerHook('actionAdminControllerSetMedia')
+            && $this->registerHook('actionFrontControllerSetMedia')
+            && $this->registerHook('displayFooter');
     }
 
     public function uninstall() {
-        if (!parent::uninstall()
-            OR !$this->removeConfig()) {
-            return false;
-        }
-        return true;
+        return parent::uninstall()
+            && $this->removeConfig();
     }
 
     private function installConfig() {
-        foreach ($this->config as $keyname => $value) {
-            Configuration::updateValue(strtoupper($keyname), $value);
-        }
+        foreach ($this->config as $k => $v) Configuration::updateValue($k, $v);
         return true;
     }
 
     private function removeConfig() {
-        foreach ($this->config as $keyname => $value) {
-            Configuration::deleteByName(strtoupper($keyname));
-        }
+        foreach ($this->config as $k => $v) Configuration::deleteByName($k);
         return true;
     }
 
     public function getConfig() {
-        $config_keys = array_keys($this->config);
-        return Configuration::getMultiple($config_keys);
+        return Configuration::getMultiple(array_keys($this->config));
     }
 
     public function getContent() {
         $output = null;
-        if (Tools::isSubmit('submitshmopinterestboardwidget')) {
-            foreach (Tools::getValue('config') as $key => $value) {
-                Configuration::updateValue($key, $value);
-            }
-            if ($this->errors) {
-                $output .= $this->displayError(implode($this->errors, '<br/>'));
-            }
-            else {
-                $output .= $this->displayConfirmation($this->l('Settings updated'));
-            }
+        if (Tools::isSubmit('submitpinterestboardwidget')) {
+            foreach (Tools::getValue('config') as $key => $value) Configuration::updateValue($key, $value);
+            if ($this->errors) $output .= $this->displayError(implode($this->errors, '<br/>'));
+            else $output .= $this->displayConfirmation($this->l('Settings updated'));
         }
-        $vars = [];
-        $vars['config'] = $this->getConfig();
-        return $output . $this->displayForm($vars);
+        return $output . $this->displayForm(['config' => $this->getConfig()]);
     }
 
     public function displayForm($vars) {
@@ -105,7 +76,7 @@ class shmoPinterestBoardWidget extends Module
             'input' => [
                 [
                     'type' => 'switch',
-                    'name' => 'config[SHMO_PINTEREST_BOARD_WIDGET]',
+                    'name' => 'config[PINTEREST_BOARD_WIDGET]',
                     'label' => $this->l('Enable Board Widget?'),
                     'hint' => $this->l('When one Pin isn’t enough, add an entire board (up to 50 Pins) to your site.'),
                     'is_bool' => true,
@@ -125,14 +96,14 @@ class shmoPinterestBoardWidget extends Module
                 ],
                 [
                     'type' => 'text',
-                    'name' => 'config[SHMO_PINTEREST_BOARD_WIDGET_URL]',
+                    'name' => 'config[PINTEREST_BOARD_WIDGET_URL]',
                     'label' => $this->l('Board Profile URL'),
                     'hint' => 'e.g. https://www.pinterest.com/pinterest/official-news/',
                     'required' => true
                 ],
                 [
                     'type' => 'text',
-                    'name' => 'config[SHMO_PINTEREST_BOARD_WIDGET_BOARD_WIDTH]',
+                    'name' => 'config[PINTEREST_BOARD_WIDGET_BOARD_WIDTH]',
                     'label' => $this->l('Board width inside the widget.'),
                     'hint' => $this->l('This width does not include the white border on either side.'),
                     'desc' => 'Minimum width of 130px. Default: Fill width of parent.',
@@ -141,7 +112,7 @@ class shmoPinterestBoardWidget extends Module
                 ],
                 [
                     'type' => 'text',
-                    'name' => 'config[SHMO_PINTEREST_BOARD_WIDGET_SCALE_HEIGHT]',
+                    'name' => 'config[PINTEREST_BOARD_WIDGET_SCALE_HEIGHT]',
                     'label' => $this->l('Board height inside the widget.'),
                     'hint' => $this->l('This does not include the white border above and below.'),
                     'desc' => 'Minimum height of 60px. Default: 175px.',
@@ -150,7 +121,7 @@ class shmoPinterestBoardWidget extends Module
                 ],
                 [
                     'type' => 'text',
-                    'name' => 'config[SHMO_PINTEREST_BOARD_WIDGET_SCALE_WIDTH]',
+                    'name' => 'config[PINTEREST_BOARD_WIDGET_SCALE_WIDTH]',
                     'label' => $this->l('Width of the Pin thumbnails within the widget.'),
                     'desc' => 'Minimum width of 60px. Default: 92px',
                     'suffix' => 'px',
@@ -185,45 +156,39 @@ class shmoPinterestBoardWidget extends Module
                 'desc' => $this->l('Back to list')
             ]
         ];
-        $helper->fields_value['config[SHMO_PINTEREST_BOARD_WIDGET]'] = Configuration::get('SHMO_PINTEREST_BOARD_WIDGET');
-        $helper->fields_value['config[SHMO_PINTEREST_BOARD_WIDGET_URL]'] = Configuration::get('SHMO_PINTEREST_BOARD_WIDGET_URL');
-        $helper->fields_value['config[SHMO_PINTEREST_BOARD_WIDGET_BOARD_WIDTH]'] = Configuration::get('SHMO_PINTEREST_BOARD_WIDGET_BOARD_WIDTH');
-        $helper->fields_value['config[SHMO_PINTEREST_BOARD_WIDGET_SCALE_HEIGHT]'] = Configuration::get('SHMO_PINTEREST_BOARD_WIDGET_SCALE_HEIGHT');
-        $helper->fields_value['config[SHMO_PINTEREST_BOARD_WIDGET_SCALE_WIDTH]'] = Configuration::get('SHMO_PINTEREST_BOARD_WIDGET_SCALE_WIDTH');
+        $helper->fields_value['config[PINTEREST_BOARD_WIDGET]'] = Configuration::get('PINTEREST_BOARD_WIDGET');
+        $helper->fields_value['config[PINTEREST_BOARD_WIDGET_URL]'] = Configuration::get('PINTEREST_BOARD_WIDGET_URL');
+        $helper->fields_value['config[PINTEREST_BOARD_WIDGET_BOARD_WIDTH]'] = Configuration::get('PINTEREST_BOARD_WIDGET_BOARD_WIDTH');
+        $helper->fields_value['config[PINTEREST_BOARD_WIDGET_SCALE_HEIGHT]'] = Configuration::get('PINTEREST_BOARD_WIDGET_SCALE_HEIGHT');
+        $helper->fields_value['config[PINTEREST_BOARD_WIDGET_SCALE_WIDTH]'] = Configuration::get('PINTEREST_BOARD_WIDGET_SCALE_WIDTH');
 
         return $helper->generateForm($twtfdForm);
     }
 
+    public function hookDisplayFooter() : void {
+        if (Configuration::get('PINTEREST_BOARD_WIDGET')) $this->context->controller->addJS('//assets.pinterest.com/js/pinit.js');
+        $this->context->smarty->assign($this->getConfig());
+        return $this->display(__FILE__, 'pinterestboardwidget.tpl');
+    }
+
     public function hookDisplayLeftColumn() {
-        $config = $this->getConfig();
-        $this->context->smarty->assign([
-            'shmoPntrstBrdWdgt' => $config
-        ]);
-        if (Configuration::get('SHMO_PINTEREST_BOARD_WIDGET')) {
-            $this->context->controller->addJS('//assets.pinterest.com/js/pinit.js');
-        }
-        return $this->display(__FILE__, 'shmopinterestboardwidget.tpl');
+        return $this->hookDisplayFooter();
     }
 
-    public function hookDisplayRightColumn($params) {
-        return $this->hookDisplayLeftColumn($params);
+    public function hookDisplayRightColumn() {
+        return $this->hookDisplayFooter();
     }
 
-    public function hookDisplayTop($params) {
-        return $this->hookDisplayLeftColumn($params);
+    public function hookDisplayTop() {
+        return $this->hookDisplayFooter();
     }
 
-    public function hookDisplayHome($params) {
-        return $this->hookDisplayLeftColumn($params);
+    public function hookDisplayHome() {
+        return $this->hookDisplayFooter();
     }
 
-    public function hookDisplayFooter($params) {
-        return $this->hookDisplayLeftColumn($params);
+    public function hookActionAdminControllerSetMedia() {
+        $this->context->controller->addJqueryPlugin('validate');
+        $this->context->controller->addJS(_MODULE_DIR_ . $this->name . '/views/js/backend.js');
     }
-
-    public function hookBackOfficeHeader() {
-        $this->context->controller->addJS('/js/jquery/plugins/jquery.validate.js');
-        $this->context->controller->addJS(_MODULE_DIR_ . $this->name . '/js/shmopinterestboardwidget.js');
-    }
-
 }
