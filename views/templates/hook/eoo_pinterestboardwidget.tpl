@@ -10,7 +10,7 @@
 *
 *  @author    André Matthies
 *  @copyright 2018-present André Matthies
-*  @license   LICENSE.md
+*  @license   LICENSE
 */
 *}
 

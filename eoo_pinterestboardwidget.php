@@ -10,14 +10,14 @@
  *
  * @author    André Matthies
  * @copyright 2018-present André Matthies
- * @license   LICENSE.md
+ * @license   LICENSE
  */
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class Eoo_Pinterestboardwidget extends Module
+class EooPinterestboardwidget extends Module
 {
     protected $errors = array();
 
@@ -31,15 +31,15 @@ class Eoo_Pinterestboardwidget extends Module
 
     public function __construct()
     {
+        $this->__moduleDir = dirname(__FILE__);
+        $this->author = 'Andre Matthies';
+        $this->bootstrap = true;
+        $this->description = $this->l('Adds a block with a Pinterest Board Widget.');
+        $this->displayName = $this->l('Pinterest Board Widget');
         $this->name = 'eoo_pinterestboardwidget';
+        $this->need_instance = 0;
         $this->tab = 'front_office_features';
         $this->version = '1.0.4';
-        $this->author = 'Andre Matthies';
-        $this->need_instance = 0;
-        $this->bootstrap = true;
-        $this->displayName = $this->l('Pinterest Board Widget');
-        $this->description = $this->l('Adds a block with a Pinterest Board Widget.');
-        $this->__moduleDir = dirname(__FILE__);
 
         parent::__construct();
     }
@@ -47,7 +47,7 @@ class Eoo_Pinterestboardwidget extends Module
     /**
      * @throws PrestaShopException
      */
-    public function install(): bool
+    public function install()
     {
         if (Shop::isFeatureActive()) {
             Shop::setContext(Shop::CONTEXT_ALL);
@@ -66,7 +66,7 @@ class Eoo_Pinterestboardwidget extends Module
             && $this->registerHook('displayFooter');
     }
 
-    public function uninstall(): bool
+    public function uninstall()
     {
         parent::uninstall();
 
@@ -77,7 +77,7 @@ class Eoo_Pinterestboardwidget extends Module
         return true;
     }
 
-    public function getContent(): string
+    public function getContent()
     {
         require_once $this->__moduleDir . '/backendhelperform.php';
 
@@ -129,13 +129,13 @@ class Eoo_Pinterestboardwidget extends Module
         return $this->hookDisplayFooter();
     }
 
-    public function hookActionAdminControllerSetMedia(): void
+    public function hookActionAdminControllerSetMedia()
     {
         $this->context->controller->addJqueryPlugin('validate');
         $this->context->controller->addJS($this->__moduleDir . '/views/js/backend.js');
     }
 
-    public function hookActionFrontControllerSetMedia(): void
+    public function hookActionFrontControllerSetMedia()
     {
         if (true === (bool)Configuration::get('EOO_PINTEREST_BOARD_WIDGET')) {
             $this->context->controller->registerJavascript(

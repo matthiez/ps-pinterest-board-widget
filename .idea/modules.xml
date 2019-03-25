@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/.idea/eoo_pinterestboardwidget.iml" filepath="$PROJECT_DIR$/.idea/eoo_pinterestboardwidget.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/ps-pinterest-board-widget.iml" filepath="$PROJECT_DIR$/.idea/ps-pinterest-board-widget.iml" />
+>>>>>>> 3ebd079360d2e95ccfa46f12af8b8924fb094ebb
     </modules>
   </component>
 </project>
