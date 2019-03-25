@@ -17,7 +17,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class EooPinterestboardwidget extends Module
+class Eoo_Pinterestboardwidget extends Module
 {
     protected $errors = array();
 
@@ -38,6 +38,7 @@ class EooPinterestboardwidget extends Module
         $this->displayName = $this->l('Pinterest Board Widget');
         $this->name = 'eoo_pinterestboardwidget';
         $this->need_instance = 0;
+        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->tab = 'front_office_features';
         $this->version = '1.0.4';
 
@@ -137,7 +138,7 @@ class EooPinterestboardwidget extends Module
 
     public function hookActionFrontControllerSetMedia()
     {
-        if (true === (bool)Configuration::get('EOO_PINTEREST_BOARD_WIDGET')) {
+        if (Configuration::get('EOO_PINTEREST_BOARD_WIDGET')) {
             $this->context->controller->registerJavascript(
                 'eoo-pinterest-pinit',
                 "https://assets.pinterest.com/js/pinit_main.js",

@@ -121,7 +121,7 @@ class BackendHelperForm extends HelperForm
 
         $this->submit_action = "submit$name";
 
-        $this->title = $this->name;
+        $this->title = $name;
 
         $this->token = Tools::getAdminTokenLite('AdminModules');
 
